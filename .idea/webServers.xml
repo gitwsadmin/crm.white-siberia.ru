@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="4df9613b-67f8-4d06-91c3-1bf931df9552" name="crm" url="http://178.170.243.199">
+        <fileTransfer rootFolder="/www/crm.white-siberia.ru" host="178.170.243.199" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
