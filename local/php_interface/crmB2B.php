@@ -6,13 +6,15 @@
  * @return mixed
  */
 function getOrderIdOnDealTitle($dealId) {
-    \Bitrix\Main\Loader::includeModule("crm");
-
-    $deal = \CCrmDeal::GetByID($dealId);
-    if (preg_match('/\d+/', $deal['TITLE'], $matches)) {
-        return $matches[0];
+    if (!\Bitrix\Main\Loader::includeModule("crm")) {
+        LogTG("Ошибка: модуль CRM не загружен");
+        return false;
+    }
+    $deal = \CCrmDeal::GetByID($dealId, false);
+    if (preg_match('/№(\d+)/', $deal['TITLE'], $matches)) {
+        return $matches[1];
     } else {
-        LogTG($deal);
+//        LogTG($deal);
         return false;
     }
 }
@@ -30,15 +32,6 @@ function getOrderById($orderId) {
 
     // Получаем основные данные заказа
     $orderData = [
-//        'ID' => $order->getId(),
-//        'USER_ID' => $order->getUserId(),
-//        'PRICE' => $order->getPrice(),
-//        'STATUS' => $order->getField("STATUS_ID"),
-//        'CURRENCY' => $order->getCurrency(),
-//        'DATE_INSERT' => $order->getDateInsert(),
-//        'PAYED' => $order->isPaid() ? 'Y' : 'N',
-//        'DELIVERY' => $order->getField("DELIVERY_ID"),
-//        'PERSON_TYPE_ID' => $order->getField("PERSON_TYPE_ID"), // Тип плательщика
         'SITE_ID' => $order->getSiteId(), // ID сайта, где создан заказ
     ];
 
@@ -53,7 +46,13 @@ function getOrderById($orderId) {
 
 function updateDealPipelineAndStage($dealId, $newCategoryId, $newStageId = 'C1:NEW', $newAssignedById = 12738) {
 
-    \Bitrix\Main\Loader::includeModule("crm");
+    global $USER;
+    $USER->Authorize(331); // Авторизация от имени администратора
+
+    if (!\Bitrix\Main\Loader::includeModule("crm")) {
+        LogTG("Ошибка: модуль CRM не загружен.");
+        return false;
+    }
 
     // Получаем фабрику сделок
     $factory = \Bitrix\Crm\Service\Container::getInstance()->getFactory(\CCrmOwnerType::Deal);
@@ -122,26 +121,30 @@ function onAfterDealAdd($event) {
     $orderData = getOrderById($orderId);
 
     // Проверяем, на каком сайте был создан заказ
-    if ($orderData['SITE_ID'] == "b2") {
+    if (isset($orderData['SITE_ID']) && $orderData['SITE_ID'] == "b2") {
         $result = updateDealPipelineAndStage($dealId, 1);
     }
 }
-use Bitrix\Main\Loader;
-use Bitrix\Crm\DealTable;
-use Bitrix\Main\Type\DateTime;
+
 function checkAndMoveRecentDeals() {
-    Loader::includeModule("crm");
-    Loader::includeModule("sale");
+//    LogTG('start checkAndMoveRecentDeals');
 
-    $date = new DateTime();
-    $date->add("-1 hour");
+    if (!\Bitrix\Main\Loader::includeModule("crm")) {
+        LogTG("Ошибка: модуль CRM не загружен.");
+        return false;
+    }
 
-    $deals = DealTable::getList([
+    $date = new \Bitrix\Main\Type\DateTime();
+    $date->add("-7 minutes");
+
+    $deals = \Bitrix\Crm\DealTable::getList([
         'filter' => [
             '>=DATE_CREATE' => $date
         ],
         'select' => ['ID', 'TITLE', 'CATEGORY_ID']
     ]);
+
+    $processed = false; // Флаг успешной работы
 
     while ($deal = $deals->fetch()) {
         $dealId = $deal['ID'];
@@ -156,8 +159,9 @@ function checkAndMoveRecentDeals() {
 
         if ($orderData['SITE_ID'] == "b2" && $deal['CATEGORY_ID'] != 1) {
             updateDealPipelineAndStage($dealId, 1);
+            $processed = true;
         }
     }
-
-    return "checkAndMoveRecentDeals();";
+//    LogTG('end checkAndMoveRecentDeals');
+    return $processed; // Возвращает true, если хоть одна сделка обработана
 }

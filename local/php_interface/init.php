@@ -69,7 +69,7 @@ function pr($ar, $dark = false, $die = false)
  * Подключение функций для работы с заказами B2B
  */
 
-include $_SERVER["DOCUMENT_ROOT"]."/local/php_interface/crmB2B.php";;
+include $_SERVER["DOCUMENT_ROOT"]."/local/php_interface/crmB2B.php";
 
 
 
