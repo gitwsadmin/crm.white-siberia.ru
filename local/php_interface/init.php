@@ -10,7 +10,7 @@
 function LogTG($messageText, $groupChatId = null)
 {
     $botToken = "5865641167:AAF55jrqMP0zFAGrU7Bv-1KUDj_7chXsVWc";
-    $defaultChatId = "141079661";
+    $defaultChatId = "-1002548525226"; //вставь актуальный ID чата с ботом По работе
     $chatId = $groupChatId ? $groupChatId : $defaultChatId;
 
     $telegramUrl = "https://api.telegram.org/bot".$botToken."/sendMessage";

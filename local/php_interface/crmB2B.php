@@ -113,7 +113,7 @@ function onAfterDealAdd($event) {
     $orderId = getOrderIdOnDealTitle($dealId);
 
     if (!$orderId) {
-        LogTG("Сделка ID {$dealId} не связана с заказом.");
+//        LogTG("Сделка ID {$dealId} не связана с заказом.");
         return;
     }
 
@@ -135,7 +135,7 @@ function checkAndMoveRecentDeals() {
     }
 
     $date = new \Bitrix\Main\Type\DateTime();
-    $date->add("-7 minutes");
+    $date->add("-3 minutes");
 
     $deals = \Bitrix\Crm\DealTable::getList([
         'filter' => [
@@ -151,7 +151,7 @@ function checkAndMoveRecentDeals() {
         $orderId = getOrderIdOnDealTitle($dealId);
 
         if (!$orderId) {
-            LogTG("Сделка ID {$dealId} не связана с заказом.");
+//            LogTG("Сделка ID {$dealId} не связана с заказом.");
             continue;
         }
 
